@@ -1,6 +1,6 @@
 {
-  "host": "localhost",
-  "port": 3986,
+  "host": "FEATHERS_HOST",
+  "port": "FEATHERS_PORT",
   "public": "../public/",
   "paginate": {
     "default": 10,
