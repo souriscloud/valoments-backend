@@ -6,17 +6,41 @@ exports.Discord = class Discord {
     this.options = options || {};
     this.client = this.setupClient()
     this.events = ['commandReceived']
+    this.app = null
   }
 
   setup (app) {
+    // not working somehow? should be called automatically by feathersjs?!?!
     this.app = app
+  }
+
+  setupService (service, app = undefined) {
+    this.service = service
+    if (app) {
+      this.app = app
+    }
   }
 
   setupClient () {
     const client = new DiscordJS.Client()
 
+    const GUILDID = '776509245432397834'
+
     client.once('ready', () => {
       console.log(`[Discord.js]: Logged in as ${client.user.tag}`)
+
+      const mineGuild = client.guilds.cache.get(GUILDID)
+      const firstPresences = mineGuild.presences.cache.mapValues(presence => {
+        const presenceUser = client.users.cache.get(presence.userID)
+        return {
+          userId: presence.userID,
+          status: presence.status,
+          clientStatus: presence.clientStatus,
+          username: presenceUser.username,
+          discriminator: presenceUser.discriminator
+        }
+      })
+      console.log(firstPresences)
     })
 
     client.login(process.env.DISCORD_TOKEN)
@@ -24,15 +48,53 @@ exports.Discord = class Discord {
     return client
   }
 
-  setupService (service) {
-    this.service = service
+  discordEventsSetup () {
+    this.client.on('message', this.handleMessages())
+    this.client.on('presenceUpdate', this.handlePresenceUpdate())
   }
 
-  setupMessageHandling () {
-    this.client.on('message', this.handleMessages(this.client))
+  async findDiscordLocalUser (discordUserId) {
+    const userService = this.app.service('users')
+
+    return await userService.find({
+      query: {
+        discordId: discordUserId
+      }
+    })
   }
 
-  handleMessages (client) {
+  handlePresenceUpdate () {
+    const service = this
+
+    return async function (oldPresence, newPresence) {
+      console.log('Presence update called...   [START]')
+      const INFOCHANNELID = '776509245432397837'
+
+      const discordUser = newPresence.user
+
+      const localUserResult = await service.findDiscordLocalUser(discordUser.id)
+
+      if (localUserResult.total === 1 && localUserResult.data) {
+        console.log('is a local user, assembling message...')
+        const localUser = localUserResult.data[0]
+
+        const infoChannel = service.client.channels.cache.get(INFOCHANNELID)
+        infoChannel.startTyping()
+        setTimeout(() => {
+          infoChannel.send(`Our member with email \`${localUser.email}\` has became ${newPresence.status}, you can check him here <@${localUser.discordId}>`)
+          infoChannel.stopTyping()
+        }, 5 * 1000)
+      } else {
+        console.log('not a local user, continue...')
+      }
+      
+      console.log('Presence update called...   [END]')
+      
+      return
+    }
+  }
+
+  handleMessages () {
     const service = this
     return function (message) {
       if (!message.content.startsWith('!') || message.author.bot) return

@@ -12,8 +12,8 @@ module.exports = function (app) {
   const service = app.service('discord')
 
   // Initialize discord things right after the service was created
-  discord.setupService(service)
-  discord.setupMessageHandling()
+  discord.setupService(service, app)
+  discord.discordEventsSetup()
 
   service.hooks(hooks)
 };
