@@ -40,7 +40,7 @@ exports.Discord = class Discord {
           discriminator: presenceUser.discriminator
         }
       })
-      console.log(firstPresences)
+      console.log('First Presence:', firstPresences)
     })
 
     client.login(process.env.DISCORD_TOKEN)
