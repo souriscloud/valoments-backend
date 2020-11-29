@@ -68,6 +68,7 @@
       <h2 class="center-text">Logging in Valoments...</h2>
     </main>
     <script>
+      alert(window.location.origin)
       const parent = window.opener;
       const params = new URLSearchParams(window.location.hash.slice(1))
       const token = params.get('access_token')
