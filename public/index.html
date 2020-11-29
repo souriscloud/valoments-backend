@@ -73,7 +73,7 @@
       const token = params.get('access_token')
       const error = params.get('error')
       if (parent !== null) {
-        alert(parent.location.host)
+        document.append(`<p>${(parent.location.host)}</p>`)
         try {
           if (token) {
             parent.postMessage({ token }, 'http://localhost:8080')
