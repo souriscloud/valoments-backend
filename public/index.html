@@ -73,11 +73,20 @@
       const token = params.get('access_token')
       const error = params.get('error')
       if (parent !== null) {
-        if (token) {
-          parent.postMessage({ token }, 'http://localhost:8080')
-        } else if (error) {
-          parent.postMessage({ error }, 'http://localhost:8080')
+        try {
+          if (token) {
+            parent.postMessage({ token }, 'http://localhost:8080')
+          } else if (error) {
+            parent.postMessage({ error }, 'http://localhost:8080')
+          }
+        } catch (err) {
+          if (token) {
+            parent.postMessage({ token }, 'http://valoments.souris.cloud')
+          } else if (error) {
+            parent.postMessage({ error }, 'http://valoments.souris.cloud')
+          }
         }
+        
 
         window.close()
       }
