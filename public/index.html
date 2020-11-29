@@ -68,29 +68,18 @@
       <h2 class="center-text">Logging in Valoments...</h2>
     </main>
     <script>
-      alert(window.location.origin)
+      const isLocalhost = window.location.origin.includes('localhost')
+      const origin = isLocalhost ? 'http://localhost:8080' : 'http://valoments.souris.cloud'
       const parent = window.opener;
       const params = new URLSearchParams(window.location.hash.slice(1))
       const token = params.get('access_token')
       const error = params.get('error')
       if (parent !== null) {
-        document.append(`<p>${(parent.location.host)}</p>`)
-        try {
-          if (token) {
-            parent.postMessage({ token }, 'http://localhost:8080')
-          } else if (error) {
-            parent.postMessage({ error }, 'http://localhost:8080')
-          }
-        } catch (err) {
-          if (token) {
-            parent.postMessage({ token }, 'http://valoments.souris.cloud')
-          } else if (error) {
-            parent.postMessage({ error }, 'http://valoments.souris.cloud')
-          }
+        if (token) {
+          parent.postMessage({ token }, origin)
+        } else if (error) {
+          parent.postMessage({ error }, origin)
         }
-        
-
-        // window.close()
       }
     </script>
   </body>
