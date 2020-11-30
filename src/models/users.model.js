@@ -9,9 +9,14 @@ module.exports = function (app) {
 
     email: { type: String, unique: true, lowercase: true },
     password: { type: String },
+
     discordUsername: { type: String },
     discordId: { type: String },
-    avatar: { type: String }
+    avatar: { type: String },
+
+    displayName: { type: String, default: () => '' },
+
+    greetMeOnDiscord: { type: Boolean, default: true }
 
   }, {
     timestamps: true
