@@ -18,7 +18,7 @@
       "header": {
         "typ": "access"
       },
-      "audience": "https://yourdomain.com",
+      "audience": "http://valoments.souris.com",
       "issuer": "feathers",
       "algorithm": "HS256",
       "expiresIn": "1d"
