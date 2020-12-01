@@ -1,12 +1,39 @@
 const DiscordJS = require('discord.js')
 
+const MINE_GUILD_ID = '776509245432397834'
+const MINE_INFO_CHANNEL_ID = '776509245432397837'
+
+const formatPresence = presence => ({
+  userId: presence.userID,
+  status: presence.status,
+  clientStatus: presence.clientStatus,
+  username: presence.user.username,
+  discriminator: presence.user.discriminator
+})
+
+const resolveDiscordColor = decimal => {
+  return `#${decimal.toString(16)}`
+}
+
 /* eslint-disable no-unused-vars */
 exports.Discord = class Discord {
   constructor (options) {
     this.options = options || {};
-    this.client = this.setupClient()
-    this.events = ['commandReceived']
+    this.events = ['commandReceived', 'presenceChanged']
     this.app = null
+
+    this.discordIdsMap = {
+      guild: MINE_GUILD_ID,
+      channels: {
+        info: MINE_INFO_CHANNEL_ID
+      }
+    }
+    this.client = this.setupClient()
+
+    this.getMap = {
+      'roles': this.getGuildRoles,
+      'members': this.getAllMembers
+    }
   }
 
   setup (app) {
@@ -24,23 +51,13 @@ exports.Discord = class Discord {
   setupClient () {
     const client = new DiscordJS.Client()
 
-    const GUILDID = '776509245432397834'
+    const GUILDID = this.discordIdsMap.guild
 
     client.once('ready', () => {
       console.log(`[Discord.js]: Logged in as ${client.user.tag}`)
 
       const mineGuild = client.guilds.cache.get(GUILDID)
-      const firstPresences = mineGuild.presences.cache.mapValues(presence => {
-        const presenceUser = client.users.cache.get(presence.userID)
-        return {
-          userId: presence.userID,
-          status: presence.status,
-          clientStatus: presence.clientStatus,
-          username: presenceUser.username,
-          discriminator: presenceUser.discriminator
-        }
-      })
-      console.log('First Presence:', firstPresences)
+      console.log('First Presence:', mineGuild.presences.cache.map(formatPresence))
     })
 
     client.login(process.env.DISCORD_TOKEN)
@@ -68,9 +85,10 @@ exports.Discord = class Discord {
 
     return async function (oldPresence, newPresence) {
       console.log('Presence update called...   [START]')
-      const INFOCHANNELID = '776509245432397837'
+      const INFOCHANNELID = service.discordIdsMap.channels.info
 
       const discordUser = newPresence.user
+      service.emitPresenceChanged(formatPresence(newPresence))
 
       const localUserResult = await service.findDiscordLocalUser(discordUser.id)
 
@@ -111,13 +129,49 @@ exports.Discord = class Discord {
     console.log('command received emmited', command)
   }
 
+  emitPresenceChanged (newPresence) {
+    this.service.emit('presenceChanged', newPresence)
+    console.log('presence changed emmited', newPresence)
+  }
+
+  async getGuildRoles (client = this.client) {
+    const guild = client.guilds.cache.get(MINE_GUILD_ID)
+
+    return guild.roles.cache.map(role => ({
+      id: role.id,
+      name: role.name,
+      managed: role.managed,
+      mentionable: role.mentionable,
+      deleted: role.deleted,
+      color: resolveDiscordColor(role.color),
+      rawPosition: role.rawPosition
+    }))
+  }
+
+  async getAllMembers (client = this.client) {
+    const guild = client.guilds.cache.get(MINE_GUILD_ID)
+    return guild.members.cache.map(member => ({
+      id: member.id,
+      name: member.displayName,
+      color: member.displayHexColor,
+      since: member.joinedAt,
+      status: member.presence.status,
+      clientStatus: member.presence.clientStatus,
+      roles: member.roles.cache.map(role => role.name)
+    }))
+  }
+
   async find (params) {
     return []
   }
 
   async get (id, params) {
-    return {
-      id, text: `A new message with ID: ${id}!`
+    if (Object.keys(this.getMap).includes(id)) {
+      return await this.getMap[id](this.client)
+    } else {
+      return {
+        id, text: `A new message with ID: ${id}!`
+      }
     }
   }
 
