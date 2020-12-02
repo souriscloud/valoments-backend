@@ -1,5 +1,7 @@
 const DiscordJS = require('discord.js')
 
+const { loadStaticDiscordCommands } = require('../../discord-static-commands')
+
 const MINE_GUILD_ID = '776509245432397834'
 const MINE_INFO_CHANNEL_ID = '776509245432397837'
 
@@ -28,11 +30,14 @@ exports.Discord = class Discord {
         info: MINE_INFO_CHANNEL_ID
       }
     }
+    this.staticCommands = new DiscordJS.Collection()
     this.client = this.setupClient()
 
     this.getMap = {
       'roles': this.getGuildRoles,
-      'members': this.getAllMembers
+      'members': this.getAllMembers,
+      'reload-dsc': this.reloadStaticCommands,
+      'dsc': this.getStaticCommands
     }
   }
 
@@ -59,6 +64,8 @@ exports.Discord = class Discord {
       const mineGuild = client.guilds.cache.get(GUILDID)
       console.log('First Presence:', mineGuild.presences.cache.map(formatPresence))
     })
+
+    loadStaticDiscordCommands(this.staticCommands)
 
     client.login(process.env.DISCORD_TOKEN)
 
@@ -118,9 +125,19 @@ exports.Discord = class Discord {
       if (!message.content.startsWith('!') || message.author.bot) return
 
       const args = message.content.slice(1).trim().split(/ +/)
-      const commandName = args.shift().toLowerCase()
+      const cmd = args.shift().toLowerCase()
 
-      service.emitCommandReceived({ args, commandName })
+      if (!service.staticCommands.has(cmd)) return
+
+      try {
+        service.staticCommands.get(cmd).execute(message, args)
+      } catch (err) {
+        console.log('error when executing static command')
+        console.error(err)
+        message.reply('error occurred when executing static command, check server console')
+      }
+
+      service.emitCommandReceived({ args, cmd })
     }
   }
 
@@ -134,7 +151,7 @@ exports.Discord = class Discord {
     console.log('presence changed emmited', newPresence)
   }
 
-  async getGuildRoles (client = this.client) {
+  async getGuildRoles ({ client = this.client }) {
     const guild = client.guilds.cache.get(MINE_GUILD_ID)
 
     return guild.roles.cache.map(role => ({
@@ -148,7 +165,7 @@ exports.Discord = class Discord {
     }))
   }
 
-  async getAllMembers (client = this.client) {
+  async getAllMembers ({ client = this.client }) {
     const guild = client.guilds.cache.get(MINE_GUILD_ID)
     return guild.members.cache.map(member => ({
       id: member.id,
@@ -161,13 +178,28 @@ exports.Discord = class Discord {
     }))
   }
 
+  async getStaticCommands (ctx) {
+    return ctx.staticCommands.map(dsc => ({
+      name: dsc.name,
+      description: dsc.description,
+      command: dsc.command,
+      enabled: dsc.enabled
+    }))
+  }
+
+  async reloadStaticCommands (ctx) {
+    loadStaticDiscordCommands(ctx.staticCommands)
+
+    return await ctx.getStaticCommands(ctx)
+  }
+
   async find (params) {
     return []
   }
 
   async get (id, params) {
     if (Object.keys(this.getMap).includes(id)) {
-      return await this.getMap[id](this.client)
+      return await this.getMap[id](this)
     } else {
       return {
         id, text: `A new message with ID: ${id}!`
