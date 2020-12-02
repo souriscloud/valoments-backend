@@ -91,6 +91,8 @@ exports.Discord = class Discord {
     const service = this
 
     return async function (oldPresence, newPresence) {
+      if (oldPresence.status === newPresence.status) return
+      
       console.log('Presence update called...   [START]')
       const INFOCHANNELID = service.discordIdsMap.channels.info
 

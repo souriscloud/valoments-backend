@@ -22,21 +22,21 @@ class DiscordStrategy extends OAuthStrategy {
   }
 
   async getEntityData (profile) {
-    // const baseData = await super.getEntityData(profile)
+    const baseData = await super.getEntityData(profile)
 
-    // if (profile.avatar == null) {
-    //   profile.avatar = 'https://cdn.discordapp.com/embed/avatars/0.png'
-    // } else {
-    //   const isGif = profile.avatar.startsWith('a_')
-    //   profile.avatar = `https://cdn.discordapp.com/avatars/${profile['id']}/${profile['avatar']}.${isGif ? 'gif' : 'png'}`
-    // }
+    if (profile.avatar == null) {
+      profile.avatar = 'https://cdn.discordapp.com/embed/avatars/0.png'
+    } else {
+      const isGif = profile.avatar.startsWith('a_')
+      profile.avatar = `https://cdn.discordapp.com/avatars/${profile['id']}/${profile['avatar']}.${isGif ? 'gif' : 'png'}`
+    }
 
     return {
-      // ...baseData,
+      ...baseData,
       discordUsername: profile.username,
       discordId: profile.id,
-      email: profile.email
-      // avatar: profile.avatar
+      email: profile.email,
+      avatar: profile.avatar
     }
   }
 }
