@@ -92,7 +92,7 @@ exports.Discord = class Discord {
 
     return async function (oldPresence, newPresence) {
       if (oldPresence.status === newPresence.status) return
-      
+
       console.log('Presence update called...   [START]')
       const INFOCHANNELID = service.discordIdsMap.channels.info
 
@@ -132,7 +132,7 @@ exports.Discord = class Discord {
       if (!service.staticCommands.has(cmd)) return
 
       try {
-        service.staticCommands.get(cmd).execute(message, args)
+        service.staticCommands.get(cmd).execute(message, args, service.app)
       } catch (err) {
         console.log('error when executing static command')
         console.error(err)
