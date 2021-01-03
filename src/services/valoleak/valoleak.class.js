@@ -71,9 +71,7 @@ exports.Valoleak = class Valoleak {
 
   async getCompetiveUpdates (riotClient, cookieJar, accessToken, count = 1) {
     const userId = await this.getUserId(riotClient, cookieJar, accessToken)
-    console.log(userId)
     const entitlementsToken = await this.getEntitlementsJWT(riotClient, cookieJar, accessToken)
-    console.log(entitlementsToken)
     const startIndex = 0
     const endIndex = count
 
@@ -96,12 +94,15 @@ exports.Valoleak = class Valoleak {
   }
 
   async create (data, params) {
+    const dtstr = new Intl.DateTimeFormat('cs', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(new Date())
     if (data.type && data.type === 'riotauth') {
       const { riotClient, cookieJar } = await this.setupRiotClient()
       const accessToken = await this.getToken(riotClient, cookieJar, {
         username: data.username,
-        password: data.password
+        password: data.password // Password as soon as retrieved is shipped to Riot, to minimalize vulnerabilities!
       })
+
+      console.log(dtstr, 'RIOTAUTH', data.username)
 
       return {
         accessToken
@@ -110,6 +111,7 @@ exports.Valoleak = class Valoleak {
 
     if (data.type && data.type === 'compet') {
       const { riotClient, cookieJar } = await this.setupRiotClient()
+      console.log(dtstr, 'COMPET')
       return await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, 3)
     }
     
