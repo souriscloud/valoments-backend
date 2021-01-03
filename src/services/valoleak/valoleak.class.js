@@ -106,13 +106,13 @@ exports.Valoleak = class Valoleak {
     const promoted = move === 'PROMOTED'
     const demoted = move === 'DEMOTED'
     const rankChanged = promoted || demoted
-    const startdate = new Date(match.MatchStartTime)
-    const intldate = new Intl.DateTimeFormat('cs', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(startdate)
+    // const startdate = new Date(match.MatchStartTime)
+    // const intldate = new Intl.DateTimeFormat('cs', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(startdate)
 
     const m = {
       id: match.MatchID,
       map: match.MapID,
-      startTime: intldate,
+      startTime: match.MatchStartTime,
       move,
       promoted,
       demoted,
