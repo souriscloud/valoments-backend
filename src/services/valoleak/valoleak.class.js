@@ -69,11 +69,24 @@ exports.Valoleak = class Valoleak {
     return entitlementsToken
   }
 
+  async getUserInfo (riotClient, accessToken, entitlementsToken, userId) {
+    const response = await riotClient.put('https://pd.eu.a.pvp.net/name-service/v2/players', [userId], {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Riot-Entitlements-JWT': entitlementsToken
+      }
+    })
+    
+    return response.data[0]
+  }
+
   async getCompetiveUpdates (riotClient, cookieJar, accessToken, count = 1) {
     const userId = await this.getUserId(riotClient, cookieJar, accessToken)
     const entitlementsToken = await this.getEntitlementsJWT(riotClient, cookieJar, accessToken)
     const startIndex = 0
     const endIndex = count
+
+    const userInfo = await this.getUserInfo(riotClient, accessToken, entitlementsToken, userId)
 
     const response = await riotClient.get(`https://pd.eu.a.pvp.net/mmr/v1/players/${userId}/competitiveupdates?startIndex=${startIndex}&endIndex=${endIndex}`, {
       headers: {
@@ -82,7 +95,10 @@ exports.Valoleak = class Valoleak {
       }
     })
     
-    return response.data
+    return {
+      userInfo,
+      matches: response.data.Matches
+    }
   }
 
   async find (params) {
@@ -111,8 +127,9 @@ exports.Valoleak = class Valoleak {
 
     if (data.type && data.type === 'compet') {
       const { riotClient, cookieJar } = await this.setupRiotClient()
-      console.log(dtstr, 'COMPET')
-      return await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, 3)
+      const competUpdates = await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, 3)
+      console.log(dtstr, 'COMPET', `${competUpdates.userInfo.GameName}#${competUpdates.userInfo.TagLine}`)
+      return competUpdates
     }
     
     return {}
