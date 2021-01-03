@@ -127,7 +127,8 @@ exports.Valoleak = class Valoleak {
 
     if (data.type && data.type === 'compet') {
       const { riotClient, cookieJar } = await this.setupRiotClient()
-      const competUpdates = await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, 3)
+      const count = data.count || 3
+      const competUpdates = await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, count)
       console.log(dtstr, 'COMPET', `${competUpdates.userInfo.GameName}#${competUpdates.userInfo.TagLine}`)
       return competUpdates
     }
