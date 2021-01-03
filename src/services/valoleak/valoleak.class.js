@@ -106,12 +106,10 @@ exports.Valoleak = class Valoleak {
     const promoted = move === 'PROMOTED'
     const demoted = move === 'DEMOTED'
     const rankChanged = promoted || demoted
-    // const startdate = new Date(match.MatchStartTime)
-    // const intldate = new Intl.DateTimeFormat('cs', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(startdate)
 
     const m = {
       id: match.MatchID,
-      map: match.MapID,
+      map: this.translateRiotMap(match.MapID),
       startTime: match.MatchStartTime,
       move,
       promoted,
@@ -149,6 +147,23 @@ exports.Valoleak = class Valoleak {
     return {
       displayName: `${userInfo.GameName} #${userInfo.TagLine}`
     }
+  }
+
+  translateRiotMap (map) {
+    const maps = {
+      '/Game/Maps/Ascent/Ascent': 'Ascent',
+      '/Game/Maps/Bonsai/Bonsai': 'Split',
+      '/Game/Maps/Duality/Duality': 'Bind',
+      '/Game/Maps/Port/Port': 'Icebox',
+      '/Game/Maps/Triad/Triad': 'Haven'
+    }
+
+    
+    if (maps[map]) {
+      return maps[map]
+    }
+
+    return map
   }
 
   transformRiotResponse ({ userInfo, matches }) {
