@@ -178,7 +178,7 @@ exports.Valoleak = class Valoleak {
     return {
       userInfo: this.transformRiotUserInfo(userInfo),
       matches: matches.map(match => this.transformRiotMatch(match)),
-      noRankekd: lastMatch === null,
+      noRanked: lastMatch === null,
       lastMatch
     }
   }
