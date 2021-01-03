@@ -101,6 +101,73 @@ exports.Valoleak = class Valoleak {
     }
   }
 
+  transformRiotMatch (match) {
+    const move = match.CompetitiveMovement
+    const promoted = move === 'PROMOTED'
+    const demoted = move === 'DEMOTED'
+    const rankChanged = promoted || demoted
+    const startdate = new Date(match.MatchStartTime)
+    const intldate = new Intl.DateTimeFormat('cs', { month: 'long', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric' }).format(startdate)
+
+    const m = {
+      id: match.MatchID,
+      map: match.MapID,
+      startTime: intldate,
+      move,
+      promoted,
+      demoted,
+      rankChanged,
+      tier: match.TierAfterUpdate,
+      before: match.TierProgressBeforeUpdate,
+      after: match.TierProgressAfterUpdate,
+      ranked: !move.includes('UNKNOWN')
+    }
+
+    if (rankChanged) {
+      if (promoted) {
+        const gain = 100 - match.TierProgressBeforeUpdate + match.TierProgressAfterUpdate
+        m.tierProgress = `+ ${gain}`
+      }
+
+      if (demoted) {
+        const gain = 100 - match.TierProgressAfterUpdate + match.TierProgressBeforeUpdate
+        m.tierProgress = `- ${gain}`
+      }
+
+      m.isUp = m.promoted
+    } else {
+      const progressChangeUp = match.TierProgressAfterUpdate > match.TierProgressBeforeUpdate
+      const progressChangeNum = progressChangeUp ? match.TierProgressAfterUpdate - match.TierProgressBeforeUpdate : match.TierProgressBeforeUpdate - match.TierProgressAfterUpdate
+      m.tierProgress = `${progressChangeUp ? '+' : '-'} ${progressChangeNum}`
+      m.isUp = progressChangeUp
+    }
+
+    return m
+  }
+
+  transformRiotUserInfo (userInfo) {
+    return {
+      displayName: `${userInfo.GameName} #${userInfo.TagLine}`
+    }
+  }
+
+  transformRiotResponse ({ userInfo, matches }) {
+    let lastMatch = null
+    for (const m of matches) {
+      if (!m.CompetitiveMovement.includes('UNKNOWN')) {
+        lastMatch = m
+        break
+      }
+    }
+
+    return {
+      userInfo: this.transformRiotUserInfo(userInfo),
+      matches: matches.map(match => this.transformRiotMatch(match)),
+      noRankekd: lastMatch === null,
+      lastMatch
+    }
+  }
+
   async find (params) {
     return [];
   }
@@ -130,7 +197,7 @@ exports.Valoleak = class Valoleak {
       const count = data.count || 3
       const competUpdates = await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, count)
       console.log(dtstr, 'COMPET', `${competUpdates.userInfo.GameName}#${competUpdates.userInfo.TagLine}`)
-      return competUpdates
+      return this.transformRiotResponse(competUpdates)
     }
     
     return {}
