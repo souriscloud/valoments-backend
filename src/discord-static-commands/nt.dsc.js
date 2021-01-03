@@ -33,10 +33,20 @@ module.exports = {
             if (args[1]) tournamentData.description = args[1]
             else tournamentData.description = 'Describe your tournament here.'
             if (args[2]) tournamentData.code = args[2]
-            tournamentData.home = {
-              user: localUser._id,
-              score: null
-            }
+            tournamentData.players = [localUser._id]
+
+            tournamentData.games = [
+              {
+                home: {
+                  user: localUser._id,
+                  score: 'neni'
+                },
+                away: {
+                  user: null,
+                  score: null
+                }
+              }
+            ]
 
             let tournament
             try {

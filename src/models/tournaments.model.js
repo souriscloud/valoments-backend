@@ -8,6 +8,20 @@ module.exports = function (app) {
   const modelName = 'tournaments';
   const mongooseClient = app.get('mongooseClient');
   const { Schema } = mongooseClient;
+  const gameSchema = new Schema({
+    gameId: { type: String, unique: true, default: () => crypto.randomBytes(8).toString('hex') },
+    parentGameId: { type: String, default: () => null },
+    played: { type: Boolean, default: () => false },
+    home: {
+      user: { type: Schema.Types.ObjectId, ref: 'users' },
+      score: { type: String }
+    },
+    away: {
+      user: { type: Schema.Types.ObjectId, ref: 'users' },
+      score: { type: String }
+    },
+    winner: { type: String }
+  })
   const schema = new Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
@@ -17,17 +31,9 @@ module.exports = function (app) {
 
     code: { type: String, unique: true, default: () => crypto.randomBytes(4).toString('hex') },
 
-    home: {
-      user: { type: Schema.Types.ObjectId, ref: 'users' },
-      score: { type: String }
-    },
+    games: [gameSchema],
 
-    away: {
-      user: { type: Schema.Types.ObjectId, ref: 'users' },
-      score: { type: String }
-    },
-
-    winner: { type: String }
+    players: [{ type: Schema.Types.ObjectId, ref: 'users' }]
   }, {
     timestamps: true
   });
