@@ -8,6 +8,23 @@ exports.Valoleak = class Valoleak {
     this.options = options || {};
   }
 
+  async getValorantEloLastCommit () {
+    const client = axios.create()
+    const response = await client.get('https://api.github.com/repos/souriscloud/valorant-elo/commits?per_page=1&page=1', {
+      headers: {
+        Accept: 'application/vnd.github.v3+json'
+      }
+    })
+    if (response.data.length !== 1) {
+      return {
+        error: 'Some error'
+      }
+    } else {
+      const lastCommit = response.data[0]
+      return lastCommit.commit
+    }
+  }
+
   async setupRiotClient () {
     const riotClient = axios.create({
       withCredentials: true
@@ -213,6 +230,10 @@ exports.Valoleak = class Valoleak {
       const competUpdates = await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, count)
       console.log(dtstr, 'COMPET', `${competUpdates.userInfo.GameName}#${competUpdates.userInfo.TagLine}`)
       return this.transformRiotResponse(competUpdates)
+    }
+
+    if (data.type && data.type === 'git-elo') {
+      return this.getValorantEloLastCommit()
     }
     
     return {}
