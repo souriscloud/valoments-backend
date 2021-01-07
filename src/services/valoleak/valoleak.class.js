@@ -184,7 +184,7 @@ exports.Valoleak = class Valoleak {
     return map
   }
 
-  transformRiotResponse ({ userInfo, matches }) {
+  transformRiotResponse ({ userId, userInfo, matches }) {
     let lastMatch = null
     for (const m of matches) {
       if (!m.CompetitiveMovement.includes('UNKNOWN')) {
@@ -194,6 +194,7 @@ exports.Valoleak = class Valoleak {
     }
 
     return {
+      userId,
       userInfo: this.transformRiotUserInfo(userInfo),
       matches: matches.map(match => this.transformRiotMatch(match)),
       noRanked: lastMatch === null,
