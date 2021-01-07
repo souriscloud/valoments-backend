@@ -113,6 +113,7 @@ exports.Valoleak = class Valoleak {
     })
     
     return {
+      userId,
       userInfo,
       matches: response.data.Matches
     }

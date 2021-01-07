@@ -6,6 +6,7 @@ const valoleak = require('./valoleak/valoleak.service.js');
 const player = require('./player/player.service.js');
 const team = require('./team/team.service.js');
 const match = require('./match/match.service.js');
+const valoleakCompetCards = require('./valoleak-compet-cards/valoleak-compet-cards.service.js');
 // eslint-disable-next-line no-unused-vars
 module.exports = function (app) {
   app.configure(users)
@@ -16,4 +17,5 @@ module.exports = function (app) {
   app.configure(player);
   app.configure(team);
   app.configure(match);
+  app.configure(valoleakCompetCards);
 }
