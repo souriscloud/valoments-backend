@@ -59,7 +59,7 @@ exports.Valoleak = class Valoleak {
     })
   
     const accessTokenResponse = response.data.response.parameters.uri
-    const responseParams = accessTokenResponse.replace('https://beta.playvalorant.com/opt_in#', '')
+    const responseParams = accessTokenResponse.replace('https://playvalorant.com/opt_in#', '')
     const responseParsed = new URLSearchParams(responseParams)
     const accessToken = responseParsed.get('access_token')
 
