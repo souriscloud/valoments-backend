@@ -8,6 +8,11 @@ exports.Valoleak = class Valoleak {
     this.options = options || {};
   }
 
+  setup (app) {
+    console.log('application was set up vole')
+    this.app = app
+  }
+
   async getValorantEloLastCommit () {
     const client = axios.create()
     const response = await client.get('https://api.github.com/repos/souriscloud/valorant-elo/commits?per_page=1&page=1', {
@@ -202,6 +207,25 @@ exports.Valoleak = class Valoleak {
     }
   }
 
+  async authorizeCardDeletion ({ username, password, userId }) {
+    const { riotClient, cookieJar } = await this.setupRiotClient()
+    const accessToken = await this.getToken(riotClient, cookieJar, {
+      username,
+      password // Password as soon as retrieved is shipped to Riot, to minimalize vulnerabilities!
+    })
+    const loginUserId = await this.getUserId(riotClient, cookieJar, accessToken)
+
+    const remove = loginUserId === userId
+
+    if (remove) {
+      await this.app.service('valoleak-compet-cards').remove(null, { query: { userId: userId } })
+    }
+    
+    return {
+      removed: remove
+    }
+  }
+
   async find (params) {
     return [];
   }
@@ -236,6 +260,11 @@ exports.Valoleak = class Valoleak {
 
     if (data.type && data.type === 'git-elo') {
       return this.getValorantEloLastCommit()
+    }
+
+    if (data.type && data.type === 'card-del-req') {
+      console.log(dtstr, 'REQUEST DELETION')
+      return this.authorizeCardDeletion(data)
     }
     
     return {}
