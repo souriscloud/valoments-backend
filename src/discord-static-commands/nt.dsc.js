@@ -7,6 +7,9 @@ module.exports = {
   command: 'nt',
   enabled: true,
 
+  onlyStaff: true,
+  onlyInParentId: false,
+
   execute (message = new DiscordJS.Message(), args = [], app = null) {
     if (!app) {
       message.reply('Command not working!')

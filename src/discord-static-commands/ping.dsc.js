@@ -7,6 +7,9 @@ module.exports = {
   command: 'ping',
   enabled: true,
 
+  onlyStaff: false,
+  onlyInParentId: false,
+
   execute (message = new DiscordJS.Message(), args = [], app = null) {
     message.reply(`Pong! args: [${args.join(', ')}]`)
   }

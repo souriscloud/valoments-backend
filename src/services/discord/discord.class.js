@@ -4,6 +4,7 @@ const { loadStaticDiscordCommands } = require('../../discord-static-commands')
 
 const MINE_GUILD_ID = '776509245432397834'
 const MINE_INFO_CHANNEL_ID = '776509245432397837'
+const MINE_VALOMENTS_CATEGORYCHANNEL = '776516766272716880'
 
 const formatPresence = presence => ({
   userId: presence.userID,
@@ -28,6 +29,9 @@ exports.Discord = class Discord {
       guild: MINE_GUILD_ID,
       channels: {
         info: MINE_INFO_CHANNEL_ID
+      },
+      categories: {
+        valoments: MINE_VALOMENTS_CATEGORYCHANNEL
       }
     }
     this.staticCommands = new DiscordJS.Collection()
@@ -63,8 +67,6 @@ exports.Discord = class Discord {
 
       const mineGuild = client.guilds.cache.get(GUILDID)
 
-      // const 
-
       console.log('First Presence:', mineGuild.presences.cache.map(formatPresence))
     })
 
@@ -73,6 +75,19 @@ exports.Discord = class Discord {
     client.login(process.env.DISCORD_TOKEN)
 
     return client
+  }
+
+  async createValomentsChannel (teamId, size = 5) {
+    const mineGuild = this.client.guilds.cache.get(this.discordIdsMap.guild)
+    const valomentsCategory = mineGuild.channels.cache.get(this.discordIdsMap.categories.valoments)
+    const options = {
+      type: 'voice',
+      topic: teamId,
+      userLimit: size,
+      parent: valomentsCategory,
+      reason: 'valoments-backend:discord-bot'
+    }
+    return mineGuild.channels.create(`team-${teamId}`, options)
   }
 
   discordEventsSetup () {
@@ -135,7 +150,10 @@ exports.Discord = class Discord {
       if (!service.staticCommands.has(cmd)) return
 
       try {
-        service.staticCommands.get(cmd).execute(message, args, service.app)
+        const command = service.staticCommands.get(cmd)
+        if (command.onlyStaff && message.member && !message.member.roles.cache.some(role => role.name === 'Souris.CLOUD Staff')) return
+        if (command.onlyInParentId && message.channel.parentID !== command.onlyInParentId) return
+        command.execute(message, args, service.app)
       } catch (err) {
         console.log('error when executing static command')
         console.error(err)
