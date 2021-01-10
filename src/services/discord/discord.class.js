@@ -62,6 +62,9 @@ exports.Discord = class Discord {
       console.log(`[Discord.js]: Logged in as ${client.user.tag}`)
 
       const mineGuild = client.guilds.cache.get(GUILDID)
+
+      // const 
+
       console.log('First Presence:', mineGuild.presences.cache.map(formatPresence))
     })
 
