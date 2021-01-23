@@ -123,12 +123,12 @@ exports.Discord = class Discord {
         console.log('is a local user, assembling message...')
         const localUser = localUserResult.data[0]
 
-        const infoChannel = service.client.channels.cache.get(INFOCHANNELID)
-        infoChannel.startTyping()
-        setTimeout(() => {
-          infoChannel.send(`Our member with display name \`${localUser.displayName}\` has became ${newPresence.status}, you can check him here <@${localUser.discordId}>`)
-          infoChannel.stopTyping()
-        }, 5 * 1000)
+        // const infoChannel = service.client.channels.cache.get(INFOCHANNELID)
+        // infoChannel.startTyping()
+        // setTimeout(() => {
+        //   infoChannel.send(`Our member with display name \`${localUser.displayName}\` has became ${newPresence.status}, you can check him here <@${localUser.discordId}>`)
+        //   infoChannel.stopTyping()
+        // }, 5 * 1000)
       } else {
         console.log('not a local user, continue...')
       }

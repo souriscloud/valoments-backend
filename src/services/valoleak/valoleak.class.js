@@ -124,6 +124,24 @@ exports.Valoleak = class Valoleak {
     }
   }
 
+  async getMatchHistory (riotClient, cookieJar, accessToken) {
+    const userId = await this.getUserId(riotClient, cookieJar, accessToken)
+    const entitlementsToken = await this.getEntitlementsJWT(riotClient, cookieJar, accessToken)
+    const startIndex = 0
+    const endIndex = 10
+
+    const response = await riotClient.get(`https://pd.eu.a.pvp.net/match-history/v1/history/${userId}?startIndex=${startIndex}&endIndex=${endIndex}`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'X-Riot-Entitlements-JWT': entitlementsToken
+      }
+    })
+
+    console.log(response.data)
+
+    return true
+  }
+
   transformRiotMatch (match) {
     const move = match.CompetitiveMovement
     const promoted = move === 'PROMOTED'
@@ -256,6 +274,11 @@ exports.Valoleak = class Valoleak {
       const competUpdates = await this.getCompetiveUpdates(riotClient, cookieJar, data.accessToken, count)
       console.log(dtstr, 'COMPET', `${competUpdates.userInfo.GameName}#${competUpdates.userInfo.TagLine}`)
       return this.transformRiotResponse(competUpdates)
+    }
+
+    if (data.type && data.type === 'match-history') {
+      const { riotClient, cookieJar } = await this.setupRiotClient()
+      return this.getMatchHistory(riotClient, cookieJar, data.accessToken)
     }
 
     if (data.type && data.type === 'git-elo') {
